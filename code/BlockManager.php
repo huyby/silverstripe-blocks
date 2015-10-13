@@ -118,13 +118,20 @@ class BlockManager extends Object{
 		return $classes;
 	}
 
-
 	/*
-	 * Get the current/active theme
-	 */
-	private function getTheme(){
-		return Config::inst()->get('SSViewer', 'theme');
-	}
+     * Get the current/active theme or 'default' to support theme-less sites
+     */
+    private function getTheme(){
+        $currentTheme = Config::inst()->get('SSViewer', 'theme');
+
+        // check directly on SiteConfig incase ContentController hasn't set
+        // the theme yet in ContentController->init()
+        if(!$currentTheme && class_exists('SiteConfig')){
+    		$currentTheme = SiteConfig::current_site_config()->Theme;
+        }
+
+        return $currentTheme ? $currentTheme : 'default';
+    }
 
 	/*
 	 * Get the block config for the current theme

@@ -32,7 +32,7 @@ class BlocksSiteTreeExtension extends SiteTreeExtension {
 	 * Block manager for Pages
 	 * */
 	public function updateCMSFields(FieldList $fields) {
-		if($fields->fieldByName('Root.Blocks') || in_array($this->owner->ClassName, $this->blockManager->getExcludeFromPageTypes())){
+		if($fields->fieldByName('Root.Blocks') || in_array($this->owner->ClassName, $this->blockManager->getExcludeFromPageTypes()) || !$this->owner->exists()){
 			return;
 		}
 		
@@ -72,9 +72,11 @@ class BlocksSiteTreeExtension extends SiteTreeExtension {
 					$activeInherited = $this->getBlocksFromAppliedBlockSets(null, false);
 
 					if ($activeInherited->count()) {
-						$fields->addFieldToTab('Root.Blocks', 
-								GridField::create('InheritedBlockList', 'Blocks Inherited from Block Sets', $activeInherited, 
-										GridFieldConfig_BlockManager::create(false, false, false)));
+						$fields->addFieldsToTab('Root.Blocks', array(
+							GridField::create('InheritedBlockList', 'Blocks Inherited from Block Sets', $activeInherited, 
+								GridFieldConfig_BlockManager::create(false, false, false)),
+							LiteralField::create('InheritedBlockListTip', "<p class='message'>Tip: Inherited blocks can be edited in the <a href='admin/block-admin'>Block Admin area</a><p>")
+						));
 					}
 
 					$fields->addFieldToTab('Root.Blocks', 
@@ -193,11 +195,20 @@ class BlocksSiteTreeExtension extends SiteTreeExtension {
 
 		foreach ($sets as $set) {
 			$restrictedToParerentIDs = $set->PageParents()->column('ID');
-			if (count($restrictedToParerentIDs) && count($ancestors)) {
-				foreach ($ancestors as $ancestor) {
-					if (in_array($ancestor, $restrictedToParerentIDs)) {
-						$list->add($set);
-						continue;
+			if (count($restrictedToParerentIDs)) {
+				// check whether the set should include selected parent, in which case check whether 
+				// it was in the restricted parents list. If it's not, or if include parentpage 
+				// wasn't selected, we check the ancestors of this page. 
+				if ($set->IncludePageParent && in_array($this->owner->ID, $restrictedToParerentIDs)) {
+					$list->add($set);
+				} else {
+					if (count($ancestors)) {
+						foreach ($ancestors as $ancestor) {
+							if (in_array($ancestor, $restrictedToParerentIDs)) {
+								$list->add($set);
+								continue;
+							}
+						}
 					}
 				}
 			} else {
@@ -221,7 +232,7 @@ class BlocksSiteTreeExtension extends SiteTreeExtension {
 		}
 		
 		foreach ($sets as $set) {
-			$setBlocks = $set->Blocks()->sort('Sort');
+			$setBlocks = $set->Blocks()->sort('Sort DESC');
 				
 			if (!$includeDisabled) {
 				$setBlocks = $setBlocks->exclude('ID', $this->owner->DisabledBlocks()->column('ID'));
