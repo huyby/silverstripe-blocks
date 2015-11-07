@@ -2,6 +2,10 @@
 
 The Blocks modules aims to provide developers with a flexible foundation for defining reusable blocks of content or widgets that can be managed in the CMS.
 
+### Features in this edition
+
+* BootStrap Blocks - Create a BootStrapRow, and add many BootStrapBlocks into it
+
 ### New Features in 1.0
 
 * Blocks are now Versioned
@@ -24,7 +28,7 @@ The Blocks modules aims to provide developers with a flexible foundation for def
 
 ### Requirements
 
-* SilverStripe CMS 3.1
+* SilverStripe CMS 3.2
 * [GridFieldExtensions](https://github.com/silverstripe-australia/silverstripe-gridfieldextensions)
 * [MultivalueField](https://github.com/nyeholt/silverstripe-multivaluefield)
 * [GridField BetterButtons](https://github.com/unclecheese/silverstripe-gridfield-betterbuttons)
