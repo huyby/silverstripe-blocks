@@ -234,7 +234,7 @@ class BlocksSiteTreeExtension extends SiteTreeExtension {
 		foreach ($sets as $set) {
 			$setBlocks = $set->Blocks()->sort('Sort DESC');
 				
-			if (!$includeDisabled) {
+			if (!$includeDisabled && $this->owner->DisabledBlocks()->count()) {
 				$setBlocks = $setBlocks->exclude('ID', $this->owner->DisabledBlocks()->column('ID'));
 			}
 
