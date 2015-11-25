@@ -6,6 +6,10 @@
  */
 class BootStrapRow extends Block{
 
+	private static $db = array(
+		'ShowDivider' => 'Boolean',
+	);
+
 	private static $has_many = array(
 		'BootStrapBlocks' => 'BootStrapBlock',
 	);
