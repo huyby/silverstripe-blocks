@@ -15,7 +15,6 @@ class Block extends DataObject implements PermissionProvider{
 		"CanViewType" => "Enum('Anyone, LoggedInUsers, OnlyTheseUsers', 'Anyone')",
 		'ExtraCSSClasses' => 'Varchar',
 		// these are legacy fields, in place to make migrations from old blocks version easier
-		'Title' => 'Varchar(255)',
 		'Weight' => 'Int',
 		'Area' => 'Varchar',
 		'Published' => 'Boolean',
@@ -123,7 +122,7 @@ class Block extends DataObject implements PermissionProvider{
 		$viewersOptionsSource["Anyone"] = _t('SiteTree.ACCESSANYONE', "Anyone");
 		$viewersOptionsSource["LoggedInUsers"] = _t('SiteTree.ACCESSLOGGEDIN', "Logged-in users");
 		$viewersOptionsSource["OnlyTheseUsers"] = _t('SiteTree.ACCESSONLYTHESE', "Only these people (choose from list)");
-		$viewersOptionsField->setSource($viewersOptionsSource);
+		$viewersOptionsField->setSource($viewersOptionsSource)->setValue("Anyone");
 
 		$fields->addFieldsToTab('Root.ViewerGroups', array(
 			$viewersOptionsField,
@@ -172,14 +171,17 @@ class Block extends DataObject implements PermissionProvider{
 	 * @return string
 	 **/
 	public function forTemplate(){
-		if($this->BlockArea){
-			$template[] = $this->class . '_' . $this->BlockArea;
-			if(SSViewer::hasTemplate($template)){
-				return $this->renderWith($template);
+		$controller = $this->getController();
+
+		if ($this->BlockArea){
+			$template = array($this->class . '_' . $this->BlockArea);
+
+			if (SSViewer::hasTemplate($template)){
+				return $controller->renderWith($template);
 			}
 		}
 
-		return $this->renderWith($this->ClassName);
+		return $controller->renderWith($this->ClassName);
 	}
 
 
@@ -342,6 +344,11 @@ class Block extends DataObject implements PermissionProvider{
      */
     public function CSSClasses($stopAtClass = 'DataObject') {
 		$classes = strtolower(parent::CSSClasses($stopAtClass));
+
+		if( !empty($classes) && ($prefix = $this->blockManager->getPrefixDefaultCSSClasses())) {
+			$classes = $prefix . str_replace(" ", " {$prefix}", $classes);
+		}
+
 		if($this->blockManager->getUseExtraCSSClasses()){
 			$classes = $this->ExtraCSSClasses ? $classes . " $this->ExtraCSSClasses" : $classes;
 		}
